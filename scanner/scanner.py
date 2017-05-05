@@ -24,14 +24,10 @@ class PortScanner(object):
         :param pkt: A list of received pkts.
         """
 
-        MAX_ERROR_MARGIN = 0.3
-
         if len(self.__received_pkts) == 0:
             return 'OS not found'
 
         ttl = mean(map(lambda p: p[IP].ttl, self.__received_pkts))
-
-        print 'ttl -> %s' % str(ttl)
 
         if ttl > 128:
             return 'iOS 12.4 (Cisco Routers)'

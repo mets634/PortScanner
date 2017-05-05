@@ -6,7 +6,7 @@
 # t -> 0 = NULL scan, 1 = FULL scan.
 
 from optparse import OptionParser
-from netaddr import IPNetwork
+from netaddr import IPNetwork, IPRange
 import sys
 
 
@@ -17,7 +17,7 @@ class Parser(object):
         """Class ctor. Initiate parser."""
 
         # parser constants
-        self.usage = 'USAGE: %prog IP/IPRange/SubNet [options]'
+        self.usage = 'USAGE: ./main.py IP/IPRange/SubNet -p PORT/PORTRange -t 0/1'
         # ip_help = 'IP/IPRange/SubNet'
         self.ports_help = 'Number/NumberRange'
         self.type_help = '0 = NULL scan, 1 = FULL scan'
@@ -42,9 +42,18 @@ class Parser(object):
             print self.usage
             sys.exit(0)
 
-        return IPNetwork(args[0]), self.str_to_numrange(options.ports), int(options.scan_type)
+        return self.ip_str_to_network(args[0]), \
+               self.port_str_to_numrange(options.ports), \
+               int(options.scan_type)
 
     @staticmethod
-    def str_to_numrange(str_range):
+    def port_str_to_numrange(str_range):
         return sum(((list(range(*[int(j) + k for k, j in enumerate(i.split('-'))]))
-                     if '-' in i else [int(i)]) for i in str_range.split(',')), [])
+                    if '-' in i else [int(i)]) for i in str_range.split(',')), [])
+
+    @staticmethod
+    def ip_str_to_network(str_range):
+        if '-' in str_range:
+            index = str_range.index('-')
+            return IPRange(str_range[:index], str_range[index+1:])
+        return IPNetwork(str_range)

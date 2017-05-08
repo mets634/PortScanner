@@ -37,6 +37,26 @@ class PortScanner(object):
         # ttl < 64
         return 'Linux'
 
+    def check_host(self):
+        """A method to determine if a given host is running."""
+
+        print '[*] Checking if %s is up...' % self.__ip
+
+        pkt = IP(dst=self.__ip) / ICMP()  # create ping pkt
+
+        print '[DEBUG] Sending ping to host...'
+        res = sr1(pkt, timeout=5)  # wait for response
+
+        if str(type(res)) == "<type 'NoneType'>":
+            print '[*] Host seems to be down'
+            return False
+
+        # else the host is up
+        self.__received_pkts.append(res)
+
+        print '[*] Host is up'
+        return True
+
     def full_scan(self, ports):
         """
         A method to do a FULL scan.
@@ -46,12 +66,12 @@ class PortScanner(object):
 
         open_ports = []
 
-        print '\n[DEBUG] Starting FULL scan on IP %s...' % self.__ip
+        print '\n[*] Starting FULL scan on IP %s...' % self.__ip
 
         ip = IP(dst=self.__ip)
 
         for port in ports:
-            print '\n[DEBUG] Scanning port %s...' % port
+            print '\n[*] Scanning port %s...' % port
 
             syn = ip / TCP(dport=port, flags='S')  # create SYN pkt
 
@@ -83,14 +103,14 @@ class PortScanner(object):
         :return: A list of open ports.
         """
 
-        print '\n[DEBUG] Starting NULL scan on IP %s...' % self.__ip
+        print '\n[*] Starting NULL scan on IP %s...' % self.__ip
 
         open_ports = []
 
         ip = IP(dst=self.__ip)
 
         for port in ports:
-            print '\n[DEBUG] Scanning port %s...' % port
+            print '\n[*] Scanning port %s...' % port
 
             pkt = ip / TCP(dport=port, flags='')  # create pkt with no flags
             print '[DEBUG] Sending empty TCP pkt...'
